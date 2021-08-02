@@ -51,7 +51,8 @@ file_list=$(find $directory -type f -iname "*.avi" -o -iname "*.mkv")
 
 for f in $file_list; do
 
-  has_dts=$(ffprobe -loglevel "$loglevel" "$f" -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 | grep dts)
+  #has_dts=$(ffprobe -loglevel "$loglevel" "$f" -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 | grep dts)
+  has_dts=$(ffmpeg -i  "$f" 2>&1 | grep -i dts)
   if [ ! -z "$has_dts" ]; then
 
     if [ "$quiet" = "0" ]; then
