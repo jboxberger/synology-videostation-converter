@@ -1,5 +1,15 @@
 #!/bin/bash
 
+ffmpeg_bin="/var/packages/ffmpeg/target/bin/ffmpeg"
+if [ ! -f "$ffmpeg_bin" ]; then
+  ffmpeg_bin="ffmpeg"
+fi
+
+ffprobe_bin="/var/packages/ffmpeg/target/bin/ffprobe"
+if [ ! -f "$ffprobe_bin" ]; then
+  ffprobe_bin="ffprobe"
+fi
+
 ########################################################################################################################
 # DEFAULT ARGUMENTS
 ########################################################################################################################
@@ -47,12 +57,14 @@ done
 ########################################################################################################################
 # PROCESSING
 ########################################################################################################################
-file_list=$(find $directory -type f -iname "*.avi" -o -iname "*.mkv")
+find "$directory" -type f -iname "*.avi" -o -iname "*.mkv" -not -path "*/@eaDir*/*" | while read -r f; do
 
-for f in $file_list; do
+  if [ ! -z "$(command -v $ffprobe_bin)" ]; then
+    has_dts=$("$ffprobe_bin" -loglevel "$loglevel" "$f" -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 | grep dts)
+  else
+    has_dts=$("$ffmpeg_bin" -i  "$f" 2>&1 | grep -i dts | grep -v "title")
+  fi
 
-  #has_dts=$(ffprobe -loglevel "$loglevel" "$f" -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 | grep dts)
-  has_dts=$(ffmpeg -i  "$f" 2>&1 | grep -i dts)
   if [ ! -z "$has_dts" ]; then
 
     if [ "$quiet" = "0" ]; then
@@ -67,7 +79,7 @@ for f in $file_list; do
     filename="${filename%.*}"
     tmp_file="$dirname/$filename.tmp.$extension"
 
-    ffmpeg -y -i "$f" \
+    "$ffmpeg_bin" -y -i "$f" \
       -map 0 -vcodec copy \
       -scodec copy \
       -acodec ac3 -b:a 640k \
