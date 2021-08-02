@@ -17,7 +17,7 @@ directory="**"
 delete_original="0" # 0 | 1
 stats="-nostats"    # -stats | -nostats
 loglevel="fatal"    # see https://ffmpeg.org/ffmpeg.html
-quiet="0"    # see https://ffmpeg.org/ffmpeg.html
+quiet="0"           #
 
 ########################################################################################################################
 # help
@@ -57,7 +57,12 @@ done
 ########################################################################################################################
 # PROCESSING
 ########################################################################################################################
-find "$directory" -type f -iname "*.avi" -o -iname "*.mkv" -not -path "*/@eaDir*/*" | while read -r f; do
+save_ifs=$IFS
+IFS=$(echo -en "\n\b")
+
+file_list=$(find $directory -type f -iname "*.avi" -o -iname "*.mkv"  -not -path "*/@eaDir*/*")
+
+for f in $file_list; do
 
   if [ ! -z "$(command -v $ffprobe_bin)" ]; then
     has_dts=$("$ffprobe_bin" -loglevel "$loglevel" "$f" -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 | grep dts)
@@ -91,14 +96,16 @@ find "$directory" -type f -iname "*.avi" -o -iname "*.mkv" -not -path "*/@eaDir*
       && \
       mv "$tmp_file" "$f"
 
-      if [ "$delete_original" = "1" ] && [ -f "$f.original" ] ; then
-        rm -f "$f.original"
-      fi
+    if [ "$delete_original" = "1" ] && [ -f "$f.original" ] ; then
+      rm -f "$f.original"
+    fi
 
-      if [ -f "$tmp_file" ] ; then
-        rm -f "$tmp_file"
-      fi
+    if [ -f "$tmp_file" ] ; then
+      rm -f "$tmp_file"
+    fi
 
   fi
 
 done
+
+IFS=$save_ifs
