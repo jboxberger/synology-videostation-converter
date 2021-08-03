@@ -1,4 +1,9 @@
 #!/bin/bash
+#----------------------------------------------------------------------------------------------------------------------#
+# this script requires the synocommunity ffmpeg package see: https://synocommunity.com/package/ffmpeg
+# please check https://synocommunity.com/ Easy Install guidelines
+# if you use other ffmpeg binaries, make sure hey are able to decode DTS, otherwise the ac3 audio track will remain silent
+#----------------------------------------------------------------------------------------------------------------------#
 
 ffmpeg_bin="/var/packages/ffmpeg/target/bin/ffmpeg"
 if [ ! -f "$ffmpeg_bin" ]; then
@@ -13,7 +18,6 @@ fi
 ########################################################################################################################
 # DEFAULT ARGUMENTS
 ########################################################################################################################
-directory="**"
 delete_original="0" # 0 | 1
 stats="-nostats"    # -stats | -nostats
 loglevel="fatal"    # see https://ffmpeg.org/ffmpeg.html
@@ -23,23 +27,36 @@ quiet="0"           #
 # help
 ########################################################################################################################
 show_help() {
-  echo "Usage: $0 <directory> [-h <help>] [-d <delete original>] [-s <show stats>] [-v <verbose>] [-q <quiet>]" 1>&2;
+  echo "Usage: $0 <source> [-h <help>] [-d <delete original>] [-s <show stats>] [-v <verbose>] [-q <quiet>]" 1>&2;
   exit 1;
 }
 
 ########################################################################################################################
+# RESTORE IFS on EXIT
+########################################################################################################################
+save_ifs=$IFS
+IFS=$(echo -en "\n\b")
+
+function finish {
+  IFS=$save_ifs
+}
+trap finish EXIT
+
+########################################################################################################################
 # ARGUMENTS HANDLING
 ########################################################################################################################
-if [ ! -z "$1" ]; then
-  if [ ! -d "$1" ]; then
-    echo "directory $1 does not exists"
-    exit 1
-  fi
-  directory="$1"
-  shift 1 # remove argument from stack
-else
+file_list=""
+if [ -z "$1" ]; then
   show_help
+elif [ -d "$1" ]; then
+  file_list=$(find "$1" -type f -iname "*.avi" -o -iname "*.mkv"  -not -path "*/@eaDir*/*")
+elif [ -f "$1" ]; then
+  file_list=("$1")
+else
+  echo "source $1 does not exists"
+  exit 1
 fi
+shift 1 # remove source argument from stack
 
 ########################################################################################################################
 # PARAMETER HANDLING
@@ -57,11 +74,6 @@ done
 ########################################################################################################################
 # PROCESSING
 ########################################################################################################################
-save_ifs=$IFS
-IFS=$(echo -en "\n\b")
-
-file_list=$(find $directory -type f -iname "*.avi" -o -iname "*.mkv"  -not -path "*/@eaDir*/*")
-
 for f in $file_list; do
 
   if [ ! -z "$(command -v $ffprobe_bin)" ]; then
