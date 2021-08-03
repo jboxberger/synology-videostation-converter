@@ -26,14 +26,14 @@ Usage: ./convert.sh <source> [-h <help>] [-d <delete original>] [-s <show stats>
 -q: no output to stdout
 ```
 
-##Cron Job
+### Cron Job
 ```
 bash /my/path/convert.sh /volume1/video -q
 ```
 ![cron-1.png](images/cron-1.png)
 ![cron-2.png](images/cron-2.png)
 
-##Watch job on Synology start
+### Watch job on Synology start
 ```
 bash /my/path/watch.sh /volume1/video -sr &> /my/path/watch.sh.log
 ```
