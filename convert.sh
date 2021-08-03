@@ -28,6 +28,10 @@ quiet="0"           #
 ########################################################################################################################
 show_help() {
   echo "Usage: $0 <source> [-h <help>] [-d <delete original>] [-s <show stats>] [-v <verbose>] [-q <quiet>]" 1>&2;
+  echo " -d: delete original file after convert ist successful (not recommended)";
+  echo " -s: shows convert progress";
+  echo " -v: display additional information";
+  echo " -q: no output to stdout";
   exit 1;
 }
 
@@ -46,7 +50,7 @@ trap finish EXIT
 # ARGUMENTS HANDLING
 ########################################################################################################################
 file_list=""
-if [ -z "$1" ]; then
+if [ -z "$1" ] || [ "$1" = "-h" ]; then
   show_help
 elif [ -d "$1" ]; then
   file_list=$(find "$1" -type f -iname "*.avi" -o -iname "*.mkv"  -not -path "*/@eaDir*/*")
@@ -103,6 +107,7 @@ for f in $file_list; do
       -loglevel "$loglevel" \
       $stats \
       "$tmp_file" \
+      < /dev/null \
       && \
       mv "$f" "$f.original" \
       && \
@@ -119,5 +124,3 @@ for f in $file_list; do
   fi
 
 done
-
-IFS=$save_ifs
