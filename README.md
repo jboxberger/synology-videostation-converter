@@ -1,6 +1,6 @@
 # synology-videostation-converter
 
-This script converts you DTS Audio Stream to AC3, so the VideoStation can stream it to your FireTV DSVideo App 
+This script converts your DTS audio stream to AC3, so the VideoStation can stream it to your FireTV DSVideo App 
 
 ```
 #----------------------------------------------------------------------------------------------------------------------#
