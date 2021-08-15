@@ -82,11 +82,13 @@ for f in $file_list; do
 
   if [ ! -z "$(command -v $ffprobe_bin)" ]; then
     has_dts=$("$ffprobe_bin" -loglevel "$loglevel" "$f" -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 | grep dts)
+    has_eac3=$("$ffprobe_bin" -loglevel "$loglevel" "$f" -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 | grep eac3)
   else
     has_dts=$("$ffmpeg_bin" -i  "$f" 2>&1 | grep -i dts | grep -v "title")
+    has_eac3=$("$ffmpeg_bin" -i  "$f" 2>&1 | grep -i eac3 | grep -v "title")
   fi
 
-  if [ ! -z "$has_dts" ]; then
+  if [ ! -z "$has_dts" ] || [ ! -z "$has_eac3" ]; then
 
     if [ "$quiet" = "0" ]; then
       printf '\033[1;34;40m'
